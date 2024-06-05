@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import requests
 from flask import jsonify
 import logging
+from datetime import datetime
 
 class StockDataFetcher(ABC):
     
@@ -40,14 +41,19 @@ class AlphaVantageDemoFetcher(StockDataFetcher):
         response = requests.get(self.API_URL, params=params)
         data = response.json()
 
-        print(data)
-
         if 'Time Series (Daily)' not in data:
             logging.warning(f"No 'Time Series (Daily)' found in response for {symbol}")
             return jsonify({'error': 'No data available'}), 404
 
+
         # Extract close prices from response
         time_series_data = data.get('Time Series (Daily)', {})
-        close_prices = {date: details['4. close'] for date, details in time_series_data.items()}
 
-        return close_prices 
+        date_data = []
+        value_data = []
+        for date, details in time_series_data.items():
+            date_object = datetime.strptime(date, "%Y-%m-%d") 
+            date_data.append(date_object)
+            value_data.append(float(details['4. close']))
+
+        return {"dates": date_data, "value": value_data}

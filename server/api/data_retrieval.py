@@ -1,7 +1,6 @@
 from flask_restful import Api, Resource
 from flask import Flask, request, jsonify, make_response, send_from_directory, send_file
 from api.stock_fetcher import AlphaVantageDemoFetcher
-import requests
 
 
 data_fetcher = Api()
@@ -18,9 +17,6 @@ class DataRetrieval(Resource):
             return result 
         
         return jsonify(result)
-
-
-
-        
+    
 
 data_fetcher.add_resource(DataRetrieval, "/load_data")
