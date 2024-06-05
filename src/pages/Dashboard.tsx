@@ -100,7 +100,7 @@ const Dashboard: React.FC = () => {
         onChange={(value) => setSelectedOptions(value)}
         className="mb-4" 
       />
-      <canvas id="chart" height="400" width="800"/>
+      <canvas id="chart" className="max-h-[50vh]"/>
     </div>
   );
 };
