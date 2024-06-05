@@ -91,7 +91,8 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="p-8">
-      <h2 className="text-2xl font-bold mb-6">Main Dashboard Page</h2>
+      <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
+      <p className="text-gray-600 mb-4">Select options from the dropdown to get started.</p>
       <Select
         isMulti
         options={stockOptions}
