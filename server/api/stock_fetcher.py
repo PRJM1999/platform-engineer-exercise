@@ -52,8 +52,7 @@ class AlphaVantageDemoFetcher(StockDataFetcher):
         date_data = []
         value_data = []
         for date, details in time_series_data.items():
-            date_object = datetime.strptime(date, "%Y-%m-%d") 
-            date_data.append(date_object)
+            date_data.append(date)
             value_data.append(float(details['4. close']))
 
         return {"dates": date_data, "value": value_data}

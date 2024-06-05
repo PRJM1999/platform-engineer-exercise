@@ -1,8 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Line } from "react-chartjs-2";
-import Select from "react-select";
+import Select, { MultiValue, Options } from "react-select";
+import { Chart, registerables } from 'chart.js';
 
-const options = [
+Chart.register(...registerables);
+
+interface Option {
+  value: string;
+  label: string;
+}
+
+const stockOptions: Options<Option> = [
   { value: "IBM", label: "IBM" },
   { value: "TSCO.LON", label: "TSCO.LON" },
   { value: "SHOP.TRT", label: "SHOP.TRT" },
@@ -13,54 +21,85 @@ const options = [
   { value: "000002.SHZ", label: "000002.SHZ" },
 ];
 
-const Dashboard = () => {
-  const [selectedOptions, setSelectedOptions] = useState([]);
-  const [chartData, setChartData] = useState({});
+const Dashboard: React.FC = () => {
+  const [selectedOptions, setSelectedOptions] = useState<MultiValue<Option>>([]);
+  const [chartData, setChartData] = useState<{
+    label: string;
+    data: number[];
+    dates: Date[];
+  }[]>([]);
+  const chartRef = useRef<Chart<"line", number[], string> | null>(null);
 
   useEffect(() => {
-    if (selectedOptions.length > 0) {
-      const fetchData = async () => {
-        try {
-          const responses = await Promise.all(
-            selectedOptions.map((option) =>
-              fetch(
-                `http://localhost:3000/load_data?symbol=${option.value}`
-              ).then((response) => {
-                if (!response.ok) {
-                  throw new Error("Network response was not ok");
-                }
-                return response.json();
-              })
-            )
+    const fetchData = async () => {
+      const data = await Promise.all(
+        selectedOptions.map(async (option) => {
+          const response = await fetch(
+            `http://localhost:3000/load_data?symbol=${option.value}`
           );
-          const dataSets = responses.map((data, index) => ({
-            label: selectedOptions[index].label,
-            data: Object.entries(data).map(([date, close]) => ({
-              x: date,
-              y: parseFloat(close),
-            })),
-            borderColor: `#${Math.floor(Math.random() * 16777215).toString(
-              16
-            )}`,
-            fill: false,
-          }));
-          setChartData({
-            datasets: dataSets,
-          });
-        } catch (error) {
-          console.error("Failed to fetch data:", error);
-        }
-      };
-      fetchData();
-    } else {
-      setChartData({});
-    }
+          const json = await response.json();
+          return {
+            label: option.label,
+            data: json.value,
+            dates: json.dates.map((dateStr: string) => new Date(dateStr)),
+          };
+        })
+      );
+      setChartData(data);
+    };
+
+    fetchData();
   }, [selectedOptions]);
 
+  useEffect(() => {
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+
+    if (chartData.length > 0) {
+      const newChartInstance = new Chart("chart", {
+        type: "line",
+        data: {
+          labels: chartData[0].dates.map((date) => date.toLocaleDateString()),
+          datasets: chartData.map((data) => ({
+            label: data.label,
+            data: data.data
+          })),
+        },
+        options: {
+            scales: {
+                x: {
+                    reverse: true, 
+                    title: {
+                        display: true,
+                        text: "Time"
+                    }
+                },
+                y : {
+                    title: {
+                        display: true,
+                        text: "Price ($)"
+                    }
+                }
+            }
+        }
+      });
+
+      chartRef.current = newChartInstance;
+    }
+  }, [chartData]);
+
   return (
-    <div>
-      <h2>Main Dashboard Page</h2>
-      
+    <div className="p-8">
+      <h2 className="text-2xl font-bold mb-6">Main Dashboard Page</h2>
+      <Select
+        isMulti
+        options={stockOptions}
+        value={selectedOptions}
+        onChange={(value) => setSelectedOptions(value)}
+        className="mb-4" 
+      />
+      <canvas id="chart" height="400" width="800"/>
     </div>
   );
 };
