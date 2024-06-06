@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Line } from "react-chartjs-2";
 import Select, { MultiValue, Options } from "react-select";
 import { Chart, registerables } from 'chart.js';
 
