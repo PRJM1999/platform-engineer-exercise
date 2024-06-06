@@ -8,6 +8,16 @@ data_fetcher = Api()
 class DataRetrieval(Resource):
 
     def get(self):
+        """
+        Retrieve stock data for a specified symbol provided via query parameters.
+
+        Returns:
+            flask.Response: JSON-formatted stock data or error message with an HTTP status code.
+
+        Examples:
+            - GET /load_data?symbol=IBM returns JSON data for 'IBM'.
+            - GET /load_data without a symbol returns error JSON {'error': 'No stock symbol provided'} with a 400 status.
+        """
         symbol = request.args.get('symbol')
         fetcher = AlphaVantageDemoFetcher()
         result = fetcher.fetch_symbol_data(symbol)

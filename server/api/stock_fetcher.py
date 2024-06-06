@@ -15,12 +15,38 @@ class StockDataFetcher(ABC):
         pass
 
 class AlphaVantageDemoFetcher(StockDataFetcher):
+    """
+    Implements stock data retrieval for demo allowed content using the AlphaVantage API.
+
+    Attributes:
+        API_URL (str): The endpoint URL for the AlphaVantage API.
+        API_KEY (str): API key used for authenticating requests to AlphaVantage; set to 'demo'.
+        ALLOWED_SYMBOLS (set): A set of stock symbols that are permitted for data fetching in the demo version.
+    """
     API_URL = "https://www.alphavantage.co/query"
     API_KEY = 'demo'
     ALLOWED_SYMBOLS = {'IBM', 'TSCO.LON', 'SHOP.TRT', 'GPV.TRV', 'MBG.DEX', 'RELIANCE.BSE', '600104.SHH', '000002.SHZ'}
 
 
-    def fetch_symbol_data(self, symbol):
+    def fetch_symbol_data(self, symbol: str) -> object:
+        """
+        Retrieves daily time series stock data for a specified symbol using the AlphaVantage API.
+
+        Args:
+            symbol (str): The stock symbol for which data is requested. Must be one of the allowed symbols.
+
+        Returns:
+            dict: A dictionary containing 'dates' and 'value' keys with lists of dates and closing prices respectively.
+            tuple: A tuple containing a Flask `jsonify` response object and an HTTP status code, if an error occurs.
+
+        Raises:
+            400: If no symbol is provided.
+            403: If the requested symbol is not included in the ALLOWED_SYMBOLS.
+            404: If the data for the requested symbol is not found in the API response.
+
+        Notes:
+            Logging is used to provide informational, warning, and error messages depending on the function execution and outcome.
+        """
 
         logging.info(f"Fetching data for symbol: {symbol}")
         
